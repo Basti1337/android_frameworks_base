@@ -138,6 +138,7 @@ import com.android.systemui.statusbar.GestureRecorder;
 import com.android.systemui.statusbar.MSimSignalClusterView;
 import com.android.systemui.statusbar.NotificationData;
 import com.android.systemui.statusbar.NotificationData.Entry;
+import com.android.systemui.statusbar.SignalClusterTextView;
 import com.android.systemui.statusbar.SignalClusterView;
 import com.android.systemui.statusbar.StatusBarIconView;
 import com.android.systemui.statusbar.phone.ShortcutsWidget;
@@ -320,6 +321,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     private boolean mRecreating = false;
     private boolean mTickerInProgress = false;
     private final Object mLock = new Object();
+
+    private SignalClusterView mSignalClusterView;
+    private SignalClusterTextView mSignalTextView;
 
     // position
     int[] mPositionTmp = new int[2];
@@ -546,6 +550,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.REMINDER_ALERT_ENABLED), false, this,
+                    UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_SIGNAL_TEXT), false, this,
                     UserHandle.USER_ALL);
             update();
         }
@@ -1171,11 +1178,17 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         mNetworkController = new NetworkController(mContext);
         mBluetoothController = new BluetoothController(mContext);
         mRotationLockController = new RotationLockController(mContext);
-        final SignalClusterView signalCluster =
-                (SignalClusterView)mStatusBarView.findViewById(R.id.signal_cluster);
 
-        mNetworkController.addSignalCluster(signalCluster);
-        signalCluster.setNetworkController(mNetworkController);
+        mSignalClusterView = (SignalClusterView) mStatusBarView.findViewById(R.id.signal_cluster);
+        mSignalTextView = (SignalClusterTextView)
+                mStatusBarView.findViewById(R.id.signal_cluster_text);
+        mBatteryView = (BatteryMeterView) mStatusBarView.findViewById(R.id.battery);
+        mDockBatteryView = (DockBatteryMeterView) mStatusBarView.findViewById(R.id.dock_battery);
+
+        mNetworkController.addSignalCluster(mSignalClusterView);
+        mNetworkController.addNetworkSignalChangedCallback(mSignalTextView);
+        mNetworkController.addSignalStrengthChangedCallback(mSignalTextView);
+        mSignalClusterView.setNetworkController(mNetworkController);
 
         if (MSimTelephonyManager.getDefault().isMultiSimEnabled()) {
             mMSimNetworkController = new MSimNetworkController(mContext);
@@ -2191,6 +2204,11 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     }
 
     public void showClock(boolean show) {
+        mShowClock = show;
+        updateClockVisibility();
+    }
+
+    private void updateClockVisibility() {
         if (mStatusBarView == null) return;
         ContentResolver resolver = mContext.getContentResolver();
         View clock = mStatusBarView.findViewById(R.id.clock);
@@ -3965,6 +3983,11 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                             .orientation == Configuration.ORIENTATION_LANDSCAPE
                     && navigationBarCanMove);
         }
+
+        int signalStyle = Settings.System.getInt(resolver,
+                Settings.System.STATUS_BAR_SIGNAL_TEXT, SignalClusterView.STYLE_NORMAL);
+        mSignalClusterView.setStyle(signalStyle);
+        mSignalTextView.setStyle(signalStyle);
     }
 
     private void resetUserSetupObserver() {
