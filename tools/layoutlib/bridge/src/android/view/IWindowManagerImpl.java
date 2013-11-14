@@ -502,6 +502,11 @@ public class IWindowManagerImpl implements IWindowManager {
     @Override
     public boolean hasMenuKeyEnabled() {
         return true;
+
+    /* @hide */
+    @Override
+    public void showCustomIntentOnKeyguard(Intent intent) {
+
     }
 
     /* @hide */
