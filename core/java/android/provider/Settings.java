@@ -2815,6 +2815,12 @@ public final class Settings {
         public static final String ACTIVE_DISPLAY_BYPASS = "active_display_bypass";
 
         /**
+         * Whether a custom lockscreen wallpaper is enabled
+         * @hide
+         */
+        public static final String LOCKSCREEN_WALLPAPER = "lockscreen_wallpaper";
+
+        /**
          * Stores values for custom lockscreen targets
          * @hide
          */
