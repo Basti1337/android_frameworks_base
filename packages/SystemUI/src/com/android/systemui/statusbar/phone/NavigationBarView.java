@@ -381,7 +381,7 @@ public class NavigationBarView extends LinearLayout {
         getRecentsButton().setVisibility(disableRecent     ? View.INVISIBLE : View.VISIBLE);
 
         final boolean showSearch = disableHome && !disableSearch;
-        final boolean showCamera = showSearch && !mCameraDisabledByDpm
+        final boolean showCamera = showSearch && !mCameraDisabledByDpm;
         final boolean showNotifs = showSearch &&
             Settings.System.getInt(mContext.getContentResolver(),
                         Settings.System.LOCKSCREEN_NOTIFICATIONS, 1) == 1 &&
