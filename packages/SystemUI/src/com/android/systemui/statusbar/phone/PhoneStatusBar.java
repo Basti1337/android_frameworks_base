@@ -304,8 +304,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     private TextView mEmergencyCallLabel;
     private int mNotificationHeaderHeight;
 
-    private int mHideLabels;
     private int mReminderEnabled;
+    private boolean mShowCarrierInPanel = false;
 
     private boolean mRecreating = false;
     private boolean mTickerInProgress = false;
@@ -433,7 +433,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     Settings.System.NOTIFICATION_SHORTCUTS_CONFIG),
                     false, this, UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.NOTIFICATION_HIDE_LABELS),
+                    Settings.System.NOTIFICATION_HIDE_CARRIER),
                     false, this, UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.STATUS_BAR_BATTERY),
@@ -651,14 +651,11 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     || notificationShortcutsIsActive.isEmpty());
 
             if (mCarrierLabel != null) {
-                mHideLabels = Settings.System.getIntForUser(resolver,
-                        Settings.System.NOTIFICATION_HIDE_LABELS, 0, UserHandle.USER_CURRENT);
-                updateCarrierMargin(mHideLabels == 3);
-                if (mHideLabels == 3) {
-                    mCarrierAndWifiViewVisible = false;
-                    mCarrierAndWifiView.setVisibility(View.INVISIBLE);
-                }
-                updateCarrierAndWifiLabelVisibility(false);
+                mShowCarrierInPanel = Settings.System.getIntForUser(resolver,
+                        Settings.System.NOTIFICATION_HIDE_CARRIER, 0, UserHandle.USER_CURRENT) == 0;
+                updateCarrierMargin(!mShowCarrierInPanel);
+                mCarrierAndWifiView.setVisibility(
+                        mShowCarrierInPanel ? View.VISIBLE : View.INVISIBLE);
             }
             updateBatteryIcons();
 
@@ -1172,11 +1169,11 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         mWifiView = mStatusBarWindow.findViewById(R.id.wifi_view);
         mCarrierLabel = (TextView)mStatusBarWindow.findViewById(R.id.carrier_label);
         if (mCarrierLabel != null) {
-            mHideLabels = Settings.System.getIntForUser(mContext.getContentResolver(),
-                    Settings.System.NOTIFICATION_HIDE_LABELS, 0, UserHandle.USER_CURRENT);
+            mShowCarrierInPanel = Settings.System.getIntForUser(mContext.getContentResolver(),
+                    Settings.System.NOTIFICATION_HIDE_CARRIER, 0, UserHandle.USER_CURRENT) == 0;
             lpCarrierLabel = (FrameLayout.LayoutParams) mCarrierAndWifiView.getLayoutParams();
-            mCarrierLabel.setVisibility(View.VISIBLE);
-
+            mCarrierLabel.setVisibility((mCarrierAndWifiViewVisible && mShowCarrierInPanel)
+                    ? View.VISIBLE : View.INVISIBLE);
             // for mobile devices, we always show mobile connection info here (SPN/PLMN)
             // for other devices, we show whatever network is connected
             if (mNetworkController.hasMobileDataFeature()) {
@@ -1932,7 +1929,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     }
 
     protected void updateCarrierAndWifiLabelVisibility(boolean force, boolean forceHide) {
-        if ((mHideLabels == 3) || mCarrierAndWifiView == null) {
+        if (!mShowCarrierInPanel || mCarrierAndWifiView == null) {
             return;
         }
         // The idea here is to only show the carrier label when there is enough room to see it,

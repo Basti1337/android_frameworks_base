@@ -4095,10 +4095,11 @@ public final class Settings {
        public static final String STATUS_BAR_BRIGHTNESS_CONTROL = "status_bar_brightness_control";
 
         /**
-         * Hide network labels in the notification drawer
+         * Hide carrier information on notification drawer
          * @hide
          */
-        public static final String NOTIFICATION_HIDE_LABELS = "notification_hide_labels";
+        public static final String NOTIFICATION_HIDE_CARRIER = "notification_hide_carrier";
+
 
         /**
          * Stores values for notification shortcut targets
