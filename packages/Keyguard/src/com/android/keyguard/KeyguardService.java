@@ -138,10 +138,6 @@ public class KeyguardService extends Service {
             checkPermission();
             mKeyguardViewMediator.dispatch(event);
         }
-        public void dispatchButtonClick(int buttonId) {
-            checkPermission();
-            mKeyguardViewMediator.dispatchButtonClick(buttonId);
-        }
         public void launchCamera() {
             checkPermission();
             mKeyguardViewMediator.launchCamera();
